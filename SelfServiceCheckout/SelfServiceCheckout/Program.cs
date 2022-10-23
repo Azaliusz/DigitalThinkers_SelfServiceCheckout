@@ -1,3 +1,5 @@
+using SelfServiceCheckout.Configurations;
+
 namespace SelfServiceCheckout
 {
     public static class Program
@@ -25,6 +27,8 @@ namespace SelfServiceCheckout
                 options.GroupNameFormat = "'v'VVV";
                 options.SubstituteApiVersionInUrl = true;
             });
+
+            builder.Services.Configure<MoneyOptions>(builder.Configuration.GetSection(nameof(MoneyOptions)));
 
             var app = builder.Build();
 
