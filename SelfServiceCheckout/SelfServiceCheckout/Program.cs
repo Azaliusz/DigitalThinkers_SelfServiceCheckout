@@ -2,6 +2,8 @@ using SelfServiceCheckout.Configurations;
 using SelfServiceCheckout.Data;
 using SelfServiceCheckout.Repositories.Abstractions;
 using SelfServiceCheckout.Repositories.Implementations;
+using SelfServiceCheckout.Services.Abstractions;
+using SelfServiceCheckout.Services.Implementations;
 
 namespace SelfServiceCheckout
 {
@@ -15,6 +17,7 @@ namespace SelfServiceCheckout
 
             builder.Services.AddScoped<SelfServiceCheckoutDbContext>();
             builder.Services.AddScoped<IMoneyDenominationRepository, MoneyDenominationRepository>();
+            builder.Services.AddScoped<IStockService, StockService>();
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
