@@ -1,4 +1,5 @@
 using SelfServiceCheckout.Configurations;
+using SelfServiceCheckout.Data;
 using SelfServiceCheckout.Repositories.Abstractions;
 using SelfServiceCheckout.Repositories.Implementations;
 
@@ -12,6 +13,7 @@ namespace SelfServiceCheckout
 
             // Add services to the container.
 
+            builder.Services.AddScoped<SelfServiceCheckoutContext>();
             builder.Services.AddScoped<IMoneyDenominationRepository, MoneyDenominationRepository>();
 
             builder.Services.AddControllers();
