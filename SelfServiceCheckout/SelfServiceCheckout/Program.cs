@@ -1,4 +1,6 @@
 using SelfServiceCheckout.Configurations;
+using SelfServiceCheckout.Repositories.Abstractions;
+using SelfServiceCheckout.Repositories.Implementations;
 
 namespace SelfServiceCheckout
 {
@@ -9,6 +11,8 @@ namespace SelfServiceCheckout
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+
+            builder.Services.AddScoped<IMoneyDenominationRepository, MoneyDenominationRepository>();
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
