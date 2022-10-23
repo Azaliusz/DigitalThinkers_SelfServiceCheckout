@@ -1,5 +1,6 @@
 using SelfServiceCheckout.Configurations;
 using SelfServiceCheckout.Data;
+using SelfServiceCheckout.Middlewares;
 using SelfServiceCheckout.Repositories.Abstractions;
 using SelfServiceCheckout.Repositories.Implementations;
 using SelfServiceCheckout.Services.Abstractions;
@@ -57,6 +58,8 @@ namespace SelfServiceCheckout
             }
 
             app.UseAuthorization();
+
+            app.UseMiddleware<ErrorLoggingMiddleware>();
 
             app.MapControllers();
 

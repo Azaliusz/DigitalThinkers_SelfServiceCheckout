@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SelfServiceCheckout.Exceptions;
 using SelfServiceCheckout.Services.Abstractions;
 
 namespace SelfServiceCheckout.Controllers
@@ -19,14 +18,7 @@ namespace SelfServiceCheckout.Controllers
         [HttpPost]
         public async Task<IActionResult> PostAsync([FromBody] Dictionary<int, int> loadedMoneyDenominations)
         {
-            try
-            {
-                return Ok(await _stockService.LoadMoneyDenominations(loadedMoneyDenominations));
-            }
-            catch (SelfServiceCheckoutBaseException e)
-            {
-                return BadRequest(e.Message);
-            }
+            return Ok(await _stockService.LoadMoneyDenominations(loadedMoneyDenominations));
         }
 
         [HttpGet]

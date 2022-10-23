@@ -11,22 +11,27 @@ namespace SelfServiceCheckout.Services.Implementations
     {
         private readonly IMoneyDenominationRepository _moneyDenominationRepository;
         private readonly IStockService _stockService;
+        private readonly ILogger<StockService> _logger;
         private readonly MoneyOptions _moneyOptions;
 
         public CheckoutService(
             IMoneyDenominationRepository moneyDenominationRepository,
             IStockService stockService,
-            IOptions<MoneyOptions> options)
+            IOptions<MoneyOptions> options,
+            ILogger<StockService> logger)
         {
             _moneyDenominationRepository = moneyDenominationRepository;
             _stockService = stockService;
+            _logger = logger;
             _moneyOptions = options.Value;
         }
 
         public async Task<object?> PaymentAndReturns(CheckoutPay checkoutPay)
         {
             if (checkoutPay is null)
+            {
                 throw new ArgumentNullException(nameof(checkoutPay));
+            }
 
             var usedCurrency = checkoutPay.Currency ?? _moneyOptions.DefaultCurrency;
 
