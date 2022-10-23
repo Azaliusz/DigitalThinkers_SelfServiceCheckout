@@ -10,16 +10,13 @@ namespace SelfServiceCheckout.Services.Implementations
     public class StockService : IStockService
     {
         private readonly IMoneyDenominationRepository _moneyDenominationRepository;
-        private readonly ILogger<StockService> _logger;
         private readonly MoneyOptions _moneyOptions;
 
         public StockService(
             IMoneyDenominationRepository moneyDenominationRepository,
-            IOptions<MoneyOptions> options,
-            ILogger<StockService> logger)
+            IOptions<MoneyOptions> options)
         {
             _moneyDenominationRepository = moneyDenominationRepository;
-            _logger = logger;
             _moneyOptions = options.Value;
         }
 

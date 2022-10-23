@@ -4,6 +4,7 @@ using SelfServiceCheckout.Exceptions;
 using SelfServiceCheckout.Models;
 using SelfServiceCheckout.Repositories.Abstractions;
 using SelfServiceCheckout.Services.Abstractions;
+using System.Text.Json;
 
 namespace SelfServiceCheckout.Services.Implementations
 {
@@ -43,6 +44,8 @@ namespace SelfServiceCheckout.Services.Implementations
             // We calculate the total value based on the added denominations.
             double totalIncome = CalculateTotalIncome(checkoutPay!.Inserted!, usedCurrencyValue);
 
+            _logger.LogInformation($"Total income: {totalIncome}");
+
             if (totalIncome < checkoutPay.Price)
             {
                 throw new NotEnoughCoverageException(checkoutPay.Price, totalIncome);
@@ -50,8 +53,12 @@ namespace SelfServiceCheckout.Services.Implementations
 
             double changeAmount = totalIncome - checkoutPay.Price;
 
+            _logger.LogInformation($"Desired return value: {changeAmount}");
+
             // The refund amount is rounded according to the HUF rounding rules.
             int roundedChangeAmount = HUFRound(changeAmount);
+
+            _logger.LogInformation($"Rounded return value: {roundedChangeAmount}");
 
             //If you have entered the money in the default currency, we will create a virtual container in which we
             //will collect the coins that have been in the machine so far and the newly inserted coins.
@@ -61,6 +68,8 @@ namespace SelfServiceCheckout.Services.Implementations
                 : await _moneyDenominationRepository.GetDenominationsForCurrencyAsync(_moneyOptions.DefaultCurrency);
 
             var changeDenominations = CalculateChangeDenomination(virtualBalance, roundedChangeAmount);
+
+            _logger.LogInformation($"Change denominations: {JsonSerializer.Serialize(changeDenominations)}");
 
             // The payment cannot be made
             if (changeDenominations == null)
