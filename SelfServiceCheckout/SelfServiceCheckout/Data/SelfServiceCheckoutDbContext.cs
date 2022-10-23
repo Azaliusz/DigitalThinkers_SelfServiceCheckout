@@ -5,11 +5,6 @@ namespace SelfServiceCheckout.Data
 {
     public class SelfServiceCheckoutDbContext : DbContext
     {
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder.UseInMemoryDatabase("SelfServiceCheckout");
-        }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<MoneyDenomination>().HasKey(model => new

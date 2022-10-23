@@ -9,14 +9,26 @@
     }
   },
   "profiles": {
-    "SelfServiceCheckout": {
+    "SelfServiceCheckout_InMemory": {
       "commandName": "Project",
       "dotnetRunMessages": true,
       "launchBrowser": true,
       "launchUrl": "swagger",
       "applicationUrl": "http://localhost:5041",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DATABASE": "InMemory"
+      }
+    },
+    "SelfServiceCheckout_SQLite": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": true,
+      "launchUrl": "swagger",
+      "applicationUrl": "http://localhost:5041",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "DATABASE": "SQLite"
       }
     },
     "IIS Express": {

@@ -14,8 +14,15 @@ namespace SelfServiceCheckout
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
+            if (string.Equals(Environment.GetEnvironmentVariable(DataBaseValues.DATABASE), DataBaseValues.SQLite))
+            {
+                builder.Services.AddScoped<SelfServiceCheckoutDbContext, SelfServiceCheckoutSQLiteDbContext>();
+            }
+            else
+            {
+                builder.Services.AddScoped<SelfServiceCheckoutDbContext, SelfServiceCheckoutInMemoryDbContext>();
+            }
 
-            builder.Services.AddScoped<SelfServiceCheckoutDbContext>();
             builder.Services.AddScoped<IMoneyDenominationRepository, MoneyDenominationRepository>();
             builder.Services.AddScoped<IStockService, StockService>();
             builder.Services.AddScoped<ICheckoutService, CheckoutService>();
