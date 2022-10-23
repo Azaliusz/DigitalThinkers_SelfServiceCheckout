@@ -18,6 +18,7 @@ namespace SelfServiceCheckout
             builder.Services.AddScoped<SelfServiceCheckoutDbContext>();
             builder.Services.AddScoped<IMoneyDenominationRepository, MoneyDenominationRepository>();
             builder.Services.AddScoped<IStockService, StockService>();
+            builder.Services.AddScoped<ICheckoutService, CheckoutService>();
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

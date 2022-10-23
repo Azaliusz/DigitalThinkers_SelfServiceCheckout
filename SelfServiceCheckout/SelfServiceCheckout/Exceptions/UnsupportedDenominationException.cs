@@ -3,9 +3,8 @@
     public class UnsupportedDenominationException : SelfServiceCheckoutBaseException
     {
         public UnsupportedDenominationException(int denomination)
-            : base($"The given denomination {denomination} is not acceptable")
+            : base($"The given denomination {denomination} is not acceptable.")
         {
-            // TODO: implementálni a kivételt
         }
     }
 }

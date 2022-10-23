@@ -66,7 +66,7 @@ namespace SelfServiceCheckout.Services.Implementations
         {
             foreach (var moneyDenomination in loadedMoneyDenominations)
             {
-                var foundendMoneyDenomination = await _moneyDenominationRepository.GetAsync(Currencies.HUF, moneyDenomination.Key);
+                var foundendMoneyDenomination = await _moneyDenominationRepository.GetAsync(_moneyOptions.DefaultCurrency, moneyDenomination.Key);
 
                 if (foundendMoneyDenomination == null)
                 {

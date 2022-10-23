@@ -7,5 +7,7 @@ namespace SelfServiceCheckout.Configurations
         public Currencies DefaultCurrency { get; set; }
 
         public Dictionary<Currencies, int[]>? AcceptableDenominations { get; set; }
+
+        public Dictionary<Currencies, double>? CurrencyValueInDefaultCurrency { get; set; }
     }
 }
