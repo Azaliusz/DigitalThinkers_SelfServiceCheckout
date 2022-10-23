@@ -5,18 +5,31 @@ using SelfServiceCheckout.Repositories.Abstractions;
 
 namespace SelfServiceCheckout.Repositories.Implementations
 {
-    public class MoneyDenominationRepository : IMoneyDenominationRepository
+    public class MoneyDenominationRepository : GenericRepository<MoneyDenomination, SelfServiceCheckoutContext>, IMoneyDenominationRepository
     {
-        private readonly SelfServiceCheckoutContext _context;
-
-        public MoneyDenominationRepository(SelfServiceCheckoutContext context)
+        public MoneyDenominationRepository(SelfServiceCheckoutContext context) :
+            base(context)
         {
-            _context = context;
+        }
+
+        public Task DeleteAsync(Currencies currency, int denomination)
+        {
+            return base.DeleteAsync(currency, denomination);
+        }
+
+        public Task<bool> Exists(Currencies currency, int denomination)
+        {
+            return base.Exists(currency, denomination);
+        }
+
+        public Task<MoneyDenomination?> GetAsync(Currencies currency, int denomination)
+        {
+            return base.GetAsync(currency, denomination);
         }
 
         public async Task<IEnumerable<MoneyDenomination>> GetDenominationsForCurrencyAsync(Currencies currency)
         {
-            return await _context.MoneyDenominations
+            return await _context.Set<MoneyDenomination>()
                 .Where(moneyDenomination => moneyDenomination.Currency == currency)
                 .ToListAsync();
         }
