@@ -13,7 +13,7 @@ namespace SelfServiceCheckout
 
             // Add services to the container.
 
-            builder.Services.AddScoped<SelfServiceCheckoutContext>();
+            builder.Services.AddScoped<SelfServiceCheckoutDbContext>();
             builder.Services.AddScoped<IMoneyDenominationRepository, MoneyDenominationRepository>();
 
             builder.Services.AddControllers();

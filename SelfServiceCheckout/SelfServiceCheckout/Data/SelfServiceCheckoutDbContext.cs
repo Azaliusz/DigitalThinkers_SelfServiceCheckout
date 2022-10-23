@@ -3,7 +3,7 @@ using SelfServiceCheckout.Models;
 
 namespace SelfServiceCheckout.Data
 {
-    public class SelfServiceCheckoutContext : DbContext
+    public class SelfServiceCheckoutDbContext : DbContext
     {
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

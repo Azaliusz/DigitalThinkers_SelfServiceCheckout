@@ -5,9 +5,9 @@ using SelfServiceCheckout.Repositories.Abstractions;
 
 namespace SelfServiceCheckout.Repositories.Implementations
 {
-    public class MoneyDenominationRepository : GenericRepository<MoneyDenomination, SelfServiceCheckoutContext>, IMoneyDenominationRepository
+    public class MoneyDenominationRepository : GenericRepository<MoneyDenomination, SelfServiceCheckoutDbContext>, IMoneyDenominationRepository
     {
-        public MoneyDenominationRepository(SelfServiceCheckoutContext context) :
+        public MoneyDenominationRepository(SelfServiceCheckoutDbContext context) :
             base(context)
         {
         }

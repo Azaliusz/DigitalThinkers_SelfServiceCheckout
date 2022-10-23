@@ -3,7 +3,7 @@ using SelfServiceCheckout.Models;
 
 namespace SelfServiceCheckout.Repositories.Abstractions
 {
-    public interface IMoneyDenominationRepository : IGenericRepository<MoneyDenomination, SelfServiceCheckoutContext>
+    public interface IMoneyDenominationRepository : IGenericRepository<MoneyDenomination, SelfServiceCheckoutDbContext>
     {
         Task<MoneyDenomination?> GetAsync(Currencies currency, int denomination);
 
