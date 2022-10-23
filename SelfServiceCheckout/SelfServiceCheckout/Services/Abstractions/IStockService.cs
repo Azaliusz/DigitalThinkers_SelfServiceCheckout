@@ -31,6 +31,10 @@ namespace SelfServiceCheckout.Services.Abstractions
         /// </exception>
         void MoneyDenominationsAddingValidation(Dictionary<int, int> loadedMoneyDenominations, Currencies currency);
 
+        /// <summary>
+        /// Returns the denominations stored in the machine and their amount in the given currency.
+        /// </summary>
+        /// <returns>Dictionary of denominations and quantity pairs.</returns>
         Task<Dictionary<int, int>> GetCurrentBalance();
     }
 }
