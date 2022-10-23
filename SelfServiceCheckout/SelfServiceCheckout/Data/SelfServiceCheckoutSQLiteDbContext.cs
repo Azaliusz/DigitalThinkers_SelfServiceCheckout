@@ -8,7 +8,8 @@ namespace SelfServiceCheckout.Data
 
         public SelfServiceCheckoutSQLiteDbContext()
         {
-            DbPath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "blogging.db");
+            ;
+            DbPath = Path.Join(Environment.CurrentDirectory, "Data", "Database", "SelfServiceCheckout.db");
         }
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
