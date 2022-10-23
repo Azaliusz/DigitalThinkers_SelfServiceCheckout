@@ -2,17 +2,59 @@
 using SelfServiceCheckout.Configurations;
 using SelfServiceCheckout.Exceptions;
 using SelfServiceCheckout.Models;
+using SelfServiceCheckout.Repositories.Abstractions;
 using SelfServiceCheckout.Services.Abstractions;
 
 namespace SelfServiceCheckout.Services.Implementations
 {
     public class StockService : IStockService
     {
+        private readonly IMoneyDenominationRepository _moneyDenominationRepository;
         private readonly MoneyOptions _moneyOptions;
 
-        public StockService(IOptions<MoneyOptions> options)
+        public StockService(IMoneyDenominationRepository moneyDenominationRepository, IOptions<MoneyOptions> options)
         {
+            _moneyDenominationRepository = moneyDenominationRepository;
             _moneyOptions = options.Value;
+        }
+
+        public async Task<Dictionary<int, int>> LoadMoneyDenominations(Dictionary<int, int> loadedMoneyDenominations)
+        {
+            if (loadedMoneyDenominations == null)
+            {
+                throw new ArgumentNullException(nameof(loadedMoneyDenominations));
+            }
+
+            // Validating the incoming data and throw exceptions when they incorrect.
+            MoneyDenominationsAddingValidation(loadedMoneyDenominations, _moneyOptions.DefaultCurrency);
+
+            // Storing of incoming data in the repository
+            foreach (var moneyDenomination in loadedMoneyDenominations)
+            {
+                var foundendMoneyDenomination = await _moneyDenominationRepository.GetAsync(Currencies.HUF, moneyDenomination.Key);
+
+                if (foundendMoneyDenomination == null)
+                {
+                    await _moneyDenominationRepository.AddAsync(new()
+                    {
+                        Currency = Currencies.HUF,
+                        Denomination = moneyDenomination.Key,
+                        Count = moneyDenomination.Value
+                    });
+                }
+                else
+                {
+                    foundendMoneyDenomination.Count += moneyDenomination.Value;
+                    await _moneyDenominationRepository.UpdateAsync(foundendMoneyDenomination);
+                }
+            }
+
+            // Querying the stored denomination
+            var actulaMoneyDenomination = await _moneyDenominationRepository.GetDenominationsForCurrencyAsync(_moneyOptions.DefaultCurrency);
+
+            return actulaMoneyDenomination.ToDictionary(
+                  moneyDenomination => moneyDenomination.Denomination,
+                  moneyDenomination => moneyDenomination.Count);
         }
 
         public void MoneyDenominationsAddingValidation(Dictionary<int, int> loadedMoneyDenominations, Currencies currency)

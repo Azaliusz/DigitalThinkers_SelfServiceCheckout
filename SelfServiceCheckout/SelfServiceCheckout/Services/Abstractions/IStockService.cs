@@ -5,6 +5,8 @@ namespace SelfServiceCheckout.Services.Abstractions
 {
     public interface IStockService
     {
+        Task<Dictionary<int, int>> LoadMoneyDenominations(Dictionary<int, int> loadedMoneyDenominations);
+
         /// <summary>
         /// Decides whether the specified denomination and quantity pairs are acceptable in the given currency.
         /// </summary>
