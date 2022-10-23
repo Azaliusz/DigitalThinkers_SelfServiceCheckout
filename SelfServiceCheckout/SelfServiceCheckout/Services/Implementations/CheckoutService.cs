@@ -30,6 +30,7 @@ namespace SelfServiceCheckout.Services.Implementations
 
             var usedCurrency = checkoutPay.Currency ?? _moneyOptions.DefaultCurrency;
 
+            // Validateing the loaded denominations in the given currency
             _stockService.MoneyDenominationsAddingValidation(checkoutPay!.Inserted!, usedCurrency);
 
             double usedCurrencyValue = GetCurrencyValueInDefaultCurrency(usedCurrency);
@@ -47,44 +48,134 @@ namespace SelfServiceCheckout.Services.Implementations
             // The refund amount is rounded according to the HUF rounding rules.
             int roundedChangeAmount = HUFRound(changeAmount);
 
-            var changeDenominations = await CalculateChangeDenomination(roundedChangeAmount);
+            //If you have entered the money in the default currency, we will create a virtual container in which we
+            //will collect the coins that have been in the machine so far and the newly inserted coins.
+            //If you do not use the default currency, we will only load the coins in the machine.
+            var virtualBalance = usedCurrency == _moneyOptions.DefaultCurrency
+                ? await GetVirtulBalance(checkoutPay!.Inserted!, _moneyOptions.DefaultCurrency)
+                : await _moneyDenominationRepository.GetDenominationsForCurrencyAsync(_moneyOptions.DefaultCurrency);
 
+            var changeDenominations = CalculateChangeDenomination(virtualBalance, roundedChangeAmount);
+
+            // The payment cannot be made
             if (changeDenominations == null)
             {
                 throw new NotPayableReturnException(roundedChangeAmount);
             }
 
-            await RemoveChangeDenomination(changeDenominations);
+            // After determining a successful return, we update the virtual balance.
+            var updatedVirtualBalance = UpdateVirtualBalance(virtualBalance, changeDenominations);
+
+            // We update the balance of the machine based on the virtual balance
+            await UpdateBalance(updatedVirtualBalance);
+
+            // If you did not use the default currency, we will only add the entered denominations to the machine's storage
+            if (usedCurrency != _moneyOptions.DefaultCurrency)
+            {
+                await _stockService.StoreLoadedDenominations(checkoutPay!.Inserted!, usedCurrency);
+            }
 
             return changeDenominations;
         }
 
-        private async Task<Dictionary<int, int>?> CalculateChangeDenomination(int roundedChangeAmount)
+        private async Task UpdateBalance(IEnumerable<MoneyDenomination> updatedVirtualBalance)
         {
-            var denominationsInTheMachine = (await _moneyDenominationRepository.GetDenominationsForCurrencyAsync(_moneyOptions.DefaultCurrency))
-                .OrderByDescending(denomination => denomination.Denomination)
+            foreach (var denomination in updatedVirtualBalance)
+            {
+                var foundedDenomination = await _moneyDenominationRepository.GetAsync(_moneyOptions.DefaultCurrency,
+                                                                                      denomination.Denomination);
+                if (foundedDenomination != null)
+                {
+                    if (denomination.Count == 0)
+                    {
+                        await _moneyDenominationRepository.DeleteAsync(foundedDenomination.Currency, foundedDenomination.Denomination);
+                    }
+                    else if (foundedDenomination.Count != denomination.Count)
+                    {
+                        foundedDenomination.Count = denomination.Count;
+                        await _moneyDenominationRepository.UpdateAsync(foundedDenomination);
+                    }
+                }
+                else
+                {
+                    if (denomination.Count != 0)
+                    {
+                        await _moneyDenominationRepository.AddAsync(new()
+                        {
+                            Currency = _moneyOptions.DefaultCurrency,
+                            Denomination = denomination.Denomination,
+                            Count = denomination.Count
+                        });
+                    }
+                }
+            }
+        }
+
+        private async Task<IEnumerable<MoneyDenomination>> GetVirtulBalance(
+            Dictionary<int, int> insertedDenominations,
+            Currencies currency)
+        {
+            var denominationsInTheMachine = (await _moneyDenominationRepository.GetDenominationsForCurrencyAsync(currency))
+                .ToList();
+
+            foreach (var insertedDenomination in insertedDenominations)
+            {
+                var foundedDenomination = denominationsInTheMachine
+                     .Find(denomination => denomination.Denomination == insertedDenomination.Key);
+
+                if (foundedDenomination == null)
+                {
+                    denominationsInTheMachine.Add(new()
+                    {
+                        Currency = currency,
+                        Denomination = insertedDenomination.Key,
+                        Count = insertedDenomination.Value
+                    });
+                }
+                else
+                {
+                    foundedDenomination.Count += insertedDenomination.Value;
+                }
+            }
+
+            return denominationsInTheMachine;
+        }
+
+        private static Dictionary<int, int>? CalculateChangeDenomination(
+            IEnumerable<MoneyDenomination> virtualBalance,
+            int roundedChangeAmount)
+        {
+            var orderedVirtualDenominationsInTheMachine = virtualBalance.OrderBy(denomination => denomination.Denomination)
                 .ToArray();
 
-            int[]? resultCounts = RecursiveChangeDenominationCalculation(denominationsInTheMachine, new int[denominationsInTheMachine.Length], 0, roundedChangeAmount);
+            int[]? resultCounts = RecursiveChangeDenominationCalculation(
+                orderedVirtualDenominationsInTheMachine,
+                new int[orderedVirtualDenominationsInTheMachine.Length],
+                0,
+                roundedChangeAmount);
 
-            if (CalculateCurrentChangeValue(denominationsInTheMachine, resultCounts) != roundedChangeAmount)
+            if (CalculateCurrentChangeValue(orderedVirtualDenominationsInTheMachine, resultCounts) != roundedChangeAmount)
             {
                 return null;
             }
 
             var changeDenominations = new Dictionary<int, int>();
-            for (int index = 0; index < denominationsInTheMachine.Length; index++)
+            for (int index = 0; index < orderedVirtualDenominationsInTheMachine.Length; index++)
             {
                 if (resultCounts[index] != 0)
                 {
-                    changeDenominations.Add(denominationsInTheMachine[index].Denomination, resultCounts[index]);
+                    changeDenominations.Add(orderedVirtualDenominationsInTheMachine[index].Denomination, resultCounts[index]);
                 }
             }
 
             return changeDenominations;
         }
 
-        private static int[] RecursiveChangeDenominationCalculation(MoneyDenomination[] denominationsInTheMachine, int[] denominationCounts, int currentDenominationIndex, int targetValue)
+        private static int[] RecursiveChangeDenominationCalculation(
+            MoneyDenomination[] denominationsInTheMachine,
+            int[] denominationCounts,
+            int currentDenominationIndex,
+            int targetValue)
         {
             if (denominationsInTheMachine.Length == currentDenominationIndex)
             {
@@ -96,12 +187,20 @@ namespace SelfServiceCheckout.Services.Implementations
                 denominationCounts[currentDenominationIndex] = denominationCount;
 
                 int totalValueAfterAddedThisDenomination = CalculateCurrentChangeValue(denominationsInTheMachine, denominationCounts);
-                if (totalValueAfterAddedThisDenomination >= targetValue)
+                if (totalValueAfterAddedThisDenomination == targetValue)
                 {
                     return denominationCounts;
                 }
+                else if (totalValueAfterAddedThisDenomination > targetValue)
+                {
+                    denominationCounts[currentDenominationIndex] = 0;
+                    return denominationCounts;
+                }
 
-                int[] newCountArray = RecursiveChangeDenominationCalculation(denominationsInTheMachine, denominationCounts, currentDenominationIndex + 1, targetValue);
+                int[] newCountArray = RecursiveChangeDenominationCalculation(denominationsInTheMachine,
+                                                                             denominationCounts,
+                                                                             currentDenominationIndex + 1,
+                                                                             targetValue);
 
                 if (CalculateCurrentChangeValue(denominationsInTheMachine, newCountArray) == targetValue)
                 {
@@ -124,21 +223,19 @@ namespace SelfServiceCheckout.Services.Implementations
             return result;
         }
 
-        private async Task RemoveChangeDenomination(Dictionary<int, int> changeDenominations)
+        private static IEnumerable<MoneyDenomination> UpdateVirtualBalance(
+            IEnumerable<MoneyDenomination> virtualDenominationsInTheMachine,
+            Dictionary<int, int> changeDenominations)
         {
-            foreach (var changeDenomination in changeDenominations)
+            foreach (var denominations in virtualDenominationsInTheMachine)
             {
-                var foundendChangeDenominations = await _moneyDenominationRepository.GetAsync(_moneyOptions.DefaultCurrency, changeDenomination.Key);
-                if (foundendChangeDenominations!.Count > changeDenomination.Value)
+                if (changeDenominations.ContainsKey(denominations.Denomination))
                 {
-                    foundendChangeDenominations.Count -= changeDenomination.Value;
-                    await _moneyDenominationRepository.UpdateAsync(foundendChangeDenominations);
-                }
-                else
-                {
-                    await _moneyDenominationRepository.DeleteAsync(foundendChangeDenominations.Currency, foundendChangeDenominations.Denomination);
+                    denominations.Count -= changeDenominations[denominations.Denomination];
                 }
             }
+
+            return virtualDenominationsInTheMachine;
         }
 
         private static int HUFRound(double value)

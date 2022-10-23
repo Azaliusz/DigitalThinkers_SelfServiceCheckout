@@ -29,7 +29,7 @@ namespace SelfServiceCheckout.Services.Implementations
             MoneyDenominationsAddingValidation(loadedMoneyDenominations, _moneyOptions.DefaultCurrency);
 
             // Storing of incoming data in the repository
-            await StoreLoadedDenominations(loadedMoneyDenominations);
+            await StoreLoadedDenominations(loadedMoneyDenominations, _moneyOptions.DefaultCurrency);
 
             // Querying the stored denomination
             return await GetCurrentBalance();
@@ -62,7 +62,7 @@ namespace SelfServiceCheckout.Services.Implementations
                   moneyDenomination => moneyDenomination.Count);
         }
 
-        private async Task StoreLoadedDenominations(Dictionary<int, int> loadedMoneyDenominations)
+        public async Task StoreLoadedDenominations(Dictionary<int, int> loadedMoneyDenominations, Currencies currency)
         {
             foreach (var moneyDenomination in loadedMoneyDenominations)
             {
@@ -72,7 +72,7 @@ namespace SelfServiceCheckout.Services.Implementations
                 {
                     await _moneyDenominationRepository.AddAsync(new()
                     {
-                        Currency = Currencies.HUF,
+                        Currency = currency,
                         Denomination = moneyDenomination.Key,
                         Count = moneyDenomination.Value
                     });

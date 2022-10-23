@@ -36,5 +36,12 @@ namespace SelfServiceCheckout.Services.Abstractions
         /// </summary>
         /// <returns>Dictionary of denominations and quantity pairs.</returns>
         Task<Dictionary<int, int>> GetCurrentBalance();
+
+        /// <summary>
+        /// Adds the specified denominations in the specified currency to the denominations stored in the machine.
+        /// </summary>
+        /// <param name="loadedMoneyDenominations">Dictionary of denomination and quantity pairs.</param>
+        /// <param name="currency">The used currency.</param>
+        Task StoreLoadedDenominations(Dictionary<int, int> loadedMoneyDenominations, Currencies currency);
     }
 }
