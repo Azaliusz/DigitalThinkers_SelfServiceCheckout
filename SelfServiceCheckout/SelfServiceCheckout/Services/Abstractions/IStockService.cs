@@ -5,6 +5,17 @@ namespace SelfServiceCheckout.Services.Abstractions
 {
     public interface IStockService
     {
+        /// <summary>
+        /// It validates incoming denominations and unit numbers and stores them incrementally.
+        /// Use <see cref="MoneyDenominationsAddingValidation"/> for validation.
+        /// </summary>
+        /// <param name="loadedMoneyDenominations">Dictionary of denomination and quantity pairs.</param>
+        /// <returns>
+        /// The currently stored denominations of the machine after successful denomination addition.
+        /// </returns>
+        /// <exception cref="ArgumentNullException">
+        /// Throw if the <paramref name="loadedMoneyDenominations"/> parameter is <see cref="null"/>.
+        /// </exception>
         Task<Dictionary<int, int>> LoadMoneyDenominations(Dictionary<int, int> loadedMoneyDenominations);
 
         /// <summary>
