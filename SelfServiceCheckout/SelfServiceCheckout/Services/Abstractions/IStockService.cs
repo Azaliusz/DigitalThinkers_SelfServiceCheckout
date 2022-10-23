@@ -30,5 +30,7 @@ namespace SelfServiceCheckout.Services.Abstractions
         /// Throw if one of the Denomination quantity is negative or 0.
         /// </exception>
         void MoneyDenominationsAddingValidation(Dictionary<int, int> loadedMoneyDenominations, Currencies currency);
+
+        Task<Dictionary<int, int>> GetCurrentBalance();
     }
 }

@@ -50,11 +50,7 @@ namespace SelfServiceCheckout.Services.Implementations
             }
 
             // Querying the stored denomination
-            var actulaMoneyDenomination = await _moneyDenominationRepository.GetDenominationsForCurrencyAsync(_moneyOptions.DefaultCurrency);
-
-            return actulaMoneyDenomination.ToDictionary(
-                  moneyDenomination => moneyDenomination.Denomination,
-                  moneyDenomination => moneyDenomination.Count);
+            return await GetCurrentBalance();
         }
 
         public void MoneyDenominationsAddingValidation(Dictionary<int, int> loadedMoneyDenominations, Currencies currency)
@@ -73,6 +69,15 @@ namespace SelfServiceCheckout.Services.Implementations
                     throw new UnacceptableDenominationCountException(denomination.Key, denomination.Value);
                 }
             }
+        }
+
+        public async Task<Dictionary<int, int>> GetCurrentBalance()
+        {
+            var actulaMoneyDenomination = await _moneyDenominationRepository.GetDenominationsForCurrencyAsync(_moneyOptions.DefaultCurrency);
+
+            return actulaMoneyDenomination.ToDictionary(
+                  moneyDenomination => moneyDenomination.Denomination,
+                  moneyDenomination => moneyDenomination.Count);
         }
 
         private int[] GetCurrencyGroup(Currencies currency)

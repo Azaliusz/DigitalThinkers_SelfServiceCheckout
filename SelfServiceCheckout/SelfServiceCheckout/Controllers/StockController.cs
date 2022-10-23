@@ -28,5 +28,11 @@ namespace SelfServiceCheckout.Controllers
                 return BadRequest(e.Message);
             }
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAsync()
+        {
+            return Ok(await _stockService.GetCurrentBalance());
+        }
     }
 }
