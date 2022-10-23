@@ -29,25 +29,7 @@ namespace SelfServiceCheckout.Services.Implementations
             MoneyDenominationsAddingValidation(loadedMoneyDenominations, _moneyOptions.DefaultCurrency);
 
             // Storing of incoming data in the repository
-            foreach (var moneyDenomination in loadedMoneyDenominations)
-            {
-                var foundendMoneyDenomination = await _moneyDenominationRepository.GetAsync(Currencies.HUF, moneyDenomination.Key);
-
-                if (foundendMoneyDenomination == null)
-                {
-                    await _moneyDenominationRepository.AddAsync(new()
-                    {
-                        Currency = Currencies.HUF,
-                        Denomination = moneyDenomination.Key,
-                        Count = moneyDenomination.Value
-                    });
-                }
-                else
-                {
-                    foundendMoneyDenomination.Count += moneyDenomination.Value;
-                    await _moneyDenominationRepository.UpdateAsync(foundendMoneyDenomination);
-                }
-            }
+            await StoreLoadedDenominations(loadedMoneyDenominations);
 
             // Querying the stored denomination
             return await GetCurrentBalance();
@@ -80,10 +62,33 @@ namespace SelfServiceCheckout.Services.Implementations
                   moneyDenomination => moneyDenomination.Count);
         }
 
+        private async Task StoreLoadedDenominations(Dictionary<int, int> loadedMoneyDenominations)
+        {
+            foreach (var moneyDenomination in loadedMoneyDenominations)
+            {
+                var foundendMoneyDenomination = await _moneyDenominationRepository.GetAsync(Currencies.HUF, moneyDenomination.Key);
+
+                if (foundendMoneyDenomination == null)
+                {
+                    await _moneyDenominationRepository.AddAsync(new()
+                    {
+                        Currency = Currencies.HUF,
+                        Denomination = moneyDenomination.Key,
+                        Count = moneyDenomination.Value
+                    });
+                }
+                else
+                {
+                    foundendMoneyDenomination.Count += moneyDenomination.Value;
+                    await _moneyDenominationRepository.UpdateAsync(foundendMoneyDenomination);
+                }
+            }
+        }
+
         private int[] GetCurrencyGroup(Currencies currency)
         {
             return _moneyOptions?.AcceptableDenominations?.ContainsKey(currency) == true
-                ? _moneyOptions?.AcceptableDenominations[currency]
+                ? _moneyOptions.AcceptableDenominations[currency]
                 : throw new UndefinedCurrencyException(currency);
         }
     }
