@@ -34,6 +34,11 @@ namespace SelfServiceCheckout.Services.Implementations
                 throw new ArgumentNullException(nameof(checkoutPay));
             }
 
+            if (checkoutPay.Price < 0)
+            {
+                throw new NegativePriceValueException(checkoutPay.Price);
+            }
+
             var usedCurrency = checkoutPay.Currency ?? _moneyOptions.DefaultCurrency;
 
             // Validateing the loaded denominations in the given currency

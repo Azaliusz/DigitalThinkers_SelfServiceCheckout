@@ -24,7 +24,7 @@ namespace SelfServiceCheckout.Middlewares
             {
                 _logger.LogWarning(e.Message);
                 context.Response.StatusCode = (int)HttpStatusCode.BadRequest;
-                await context.Response.WriteAsync(e.Message);
+                await context.Response.WriteAsJsonAsync(e.Message);
             }
             catch (Exception e)
             {
