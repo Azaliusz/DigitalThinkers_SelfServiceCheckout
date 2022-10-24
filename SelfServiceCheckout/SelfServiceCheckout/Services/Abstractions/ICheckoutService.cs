@@ -4,6 +4,6 @@ namespace SelfServiceCheckout.Services.Abstractions
 {
     public interface ICheckoutService
     {
-        Task<object?> PaymentAndReturns(CheckoutPay checkoutPay);
+        Task<Dictionary<int, int>> PaymentAndReturns(CheckoutPay checkoutPay);
     }
 }

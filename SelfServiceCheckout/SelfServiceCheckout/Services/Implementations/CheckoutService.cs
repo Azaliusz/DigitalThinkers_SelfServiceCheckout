@@ -27,7 +27,7 @@ namespace SelfServiceCheckout.Services.Implementations
             _moneyOptions = options.Value;
         }
 
-        public async Task<object?> PaymentAndReturns(CheckoutPay checkoutPay)
+        public async Task<Dictionary<int, int>> PaymentAndReturns(CheckoutPay checkoutPay)
         {
             if (checkoutPay is null)
             {
