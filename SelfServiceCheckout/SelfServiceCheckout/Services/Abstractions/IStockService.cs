@@ -43,5 +43,7 @@ namespace SelfServiceCheckout.Services.Abstractions
         /// <param name="loadedMoneyDenominations">Dictionary of denomination and quantity pairs.</param>
         /// <param name="currency">The used currency.</param>
         Task StoreLoadedDenominations(Dictionary<int, int> loadedMoneyDenominations, Currencies currency);
+
+        int[] GetCurrencyGroup(Currencies currency);
     }
 }

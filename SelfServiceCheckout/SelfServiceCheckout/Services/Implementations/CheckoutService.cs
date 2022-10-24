@@ -160,7 +160,7 @@ namespace SelfServiceCheckout.Services.Implementations
             return denominationsInTheMachine;
         }
 
-        private static Dictionary<int, int>? CalculateChangeDenomination(
+        public Dictionary<int, int>? CalculateChangeDenomination(
             IEnumerable<MoneyDenomination> virtualBalance,
             int roundedChangeAmount)
         {

@@ -87,7 +87,7 @@ namespace SelfServiceCheckout.Services.Implementations
             }
         }
 
-        private int[] GetCurrencyGroup(Currencies currency)
+        public int[] GetCurrencyGroup(Currencies currency)
         {
             return _moneyOptions?.AcceptableDenominations?.ContainsKey(currency) == true
                 ? _moneyOptions.AcceptableDenominations[currency]
